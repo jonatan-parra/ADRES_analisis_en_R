@@ -7,6 +7,10 @@ library(DBI)
 library(RSQLite)
 library(ggplot2)
 
+#---------------------------------------
+# Funciones de limpieza
+#---------------------------------------
+
 # Función para limpiar los nombre de los municipios, departamentos y regiones
 limpiar_datos <- function(municipios_df) {      
   
@@ -39,13 +43,9 @@ limpiar_columna_Departamento <- function(municipios_df) {
 
 
 
-
-
-
 #---------------------------------------
 # Crear la conexión a la base de datos
 #---------------------------------------
-
 con <- dbConnect(SQLite(), "C:\\Users\\jon99\\Downloads\\ADRES prueba tecnica\\db\\base.db")
 
 # Listar las tablas que contiene la base de datos
@@ -69,10 +69,10 @@ municipios_df$Region = factor(municipios_df$Region)
 municipios_df$Dep = factor(municipios_df$Dep)
 municipios_df$Irural = factor(municipios_df$Irural)
 
-
-nrow(municipios_df)
-ncol(municipios_df)
-summary(municipios_df)
+# Caracteristicas del dataset 
+nrow(municipios_df) # Cantidad de filas
+ncol(municipios_df) # Cantidad de columnas
+summary(municipios_df) # Resumen
 
 #---------------------------------
 # Top población por municipio
@@ -118,7 +118,25 @@ ggplot(departamentos_df, aes(x=as.factor(Departamento), y=Superficie)) +
   xlab("Departamento") 
 
 
+#----------------------------------------
+# Cantidad de departamentos por region
+#----------------------------------------
+cant_departamentos_df <- dbGetQuery(conn=con, 
+                                    statement=paste("SELECT Region, count(DISTINCT Dep) as cant_departamentos  
+                                                        FROM municipio 
+                                                        GROUP by Region
+                                                        order by cant_departamentos desc", sep=""))
 
+
+# Graficar cantidad departamentos por región
+cant_departamentos <-ggplot(data=cant_departamentos_df, aes(x = reorder(Region, -cant_departamentos), y=cant_departamentos)) +
+  geom_bar(stat="identity",fill="blue", alpha=0.5)+
+  theme_minimal() + 
+  xlab("Región") +
+  ylab("Cantidad de departamentos") +
+  ggtitle("Departamentos por región") +
+  geom_text(aes(label = cant_departamentos, y = cant_departamentos), size = 3)
+cant_departamentos
 
 
 
