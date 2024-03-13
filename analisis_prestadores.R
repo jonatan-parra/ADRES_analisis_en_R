@@ -20,6 +20,46 @@ as.data.frame(dbListTables(con))
 
 
 
+#---------------------------------------
+# Descripción del dataset
+#---------------------------------------
+prestador_df <- dbGetQuery(conn=con, statement=paste("SELECT * FROM prestador", sep=""))
+
+nrow(prestador_df) # Cantidad de filas
+ncol(prestador_df) # Cantidad de columnas
+summary(prestador_df) # Resumen
+
+
+
+#--------------------------------------------------
+# Top de mas prestadores por departamento en el año 2024
+#--------------------------------------------------
+# Query para obtener los prestador para el año 2024
+top_radicacion_df <- dbGetQuery(conn=con, 
+                                statement=paste("SELECT depa_nombre, count(DISTINCT nits_nit) as cant_nit
+                                              FROM prestador 
+                                              WHERE
+                                              SUBSTRING (fecha_radicacion, 1, 4) = '2024'
+                                              GROUP by depa_nombre
+                                              order by cant_nit DESC
+                                              LIMIT 5", sep=""))
+
+
+# Graficar top 
+top_radicacion <-ggplot(data=top_radicacion_df, aes(x = reorder(depa_nombre, cant_nit), y=cant_nit)) +
+  geom_bar(stat="identity",fill="green", alpha=0.6)+
+  theme_minimal() + 
+  xlab("Departamento") +
+  ylab("Cantidad de prestadores (NIT únicos)") +
+  ggtitle("Top de departamentos con mas prestadores radicados en el año 2024") +
+  coord_flip() +
+  geom_text(aes(label = cant_nit, y = cant_nit), size = 3)
+top_radicacion
+
+
+
+
+
 #--------------------------------------------------
 # Cantidad de vencimiento de prestadores por año
 #--------------------------------------------------
@@ -40,34 +80,6 @@ w + geom_point(size=5) +
 
 
 
-#--------------------------------------------------
-# Top de mas prestadores por departamento en el año 2024
-#--------------------------------------------------
-# Query para obtener los prestador para el año 2024
-top_radicacion_df <- dbGetQuery(conn=con, 
-                                statement=paste("SELECT depa_nombre, count(DISTINCT nits_nit) as cant_nit
-                                              FROM prestador 
-                                              WHERE
-                                              SUBSTRING (fecha_radicacion, 1, 4) = '2024'
-                                              GROUP by depa_nombre
-                                              order by cant_nit DESC
-                                              LIMIT 10", sep=""))
-
-
-# Graficar top 
-top_radicacion <-ggplot(data=top_radicacion_df, aes(x = reorder(depa_nombre, cant_nit), y=cant_nit)) +
-  geom_bar(stat="identity",fill="green", alpha=0.6)+
-  theme_minimal() + 
-  xlab("Departamento") +
-  ylab("Cantidad de prestadores (NIT únicos)") +
-  ggtitle("Top de departamentos con mas prestadores radicados en el año 2024") +
-  coord_flip() +
-  geom_text(aes(label = cant_nit, y = cant_nit), size = 3)
-top_radicacion
-
-
-
-
 
 
 
@@ -78,7 +90,7 @@ radicacion_df <- dbGetQuery(conn=con,
                             statement=paste("SELECT depa_nombre, count(DISTINCT nits_nit) as cant_nit, SUBSTRING(fecha_radicacion, 1, 4) as anio_radicacion
                                       FROM prestador 
                                       WHERE SUBSTRING (fecha_radicacion, 1, 4) >= '2019'
-                                      AND depa_nombre in ('Antioquia', 'Bogotá D.C', 'Cali', 'Valle del cauca','Quindío')
+                                      AND depa_nombre in ('Antioquia', 'Bogotá D.C', 'Cali', 'Valle del cauca')
                                       GROUP by depa_nombre, anio_radicacion
                                       order by anio_radicacion DESC", sep=""))
 
@@ -88,8 +100,8 @@ radicacion <- ggplot(data=radicacion_df, aes(x=anio_radicacion, y= cant_nit))
 radicacion + geom_point(size=3) +
   geom_smooth() +
   xlab("Año") +
-  ylab("Evolutivo de cantidad de prestadores por año") +
-  ggtitle("Cantidad de vencimientos por año") +
+  ylab("Evolutivo de cantidad de radicaciones por año") +
+  ggtitle("Cantidad de radicaciones por año") +
   facet_grid(.~depa_nombre)
 
 
@@ -100,7 +112,7 @@ radicacion_df <- dbGetQuery(conn=con,
                             statement=paste("SELECT depa_nombre, count(DISTINCT nits_nit) as cant_nit, SUBSTRING(fecha_radicacion, 1, 4) as anio_radicacion, clase_persona
                                             FROM prestador 
                                             WHERE SUBSTRING (fecha_radicacion, 1, 4) >= '2020'
-                                            AND depa_nombre in ('Antioquia', 'Bogotá D.C', 'Cali', 'Valle del cauca','Quindío')
+                                            AND depa_nombre in ('Antioquia', 'Bogotá D.C', 'Cali', 'Valle del cauca')
                                             GROUP by depa_nombre, anio_radicacion, clase_persona
                                             order by anio_radicacion DESC
                                             ", sep=""))
@@ -111,8 +123,8 @@ radicacion <- ggplot(data=radicacion_df, aes(x=anio_radicacion, y= cant_nit))
 radicacion + geom_point(size=3) +
   geom_smooth() +
   xlab("Año") +
-  ylab("Evolutivo de cantidad de prestadores por año") +
-  ggtitle("Cantidad de vencimientos por año") +
+  ylab("Cantidad de NITs") +
+  ggtitle("Evolutivo de cantidad de radicaciones por año y tipo de persona") +
   facet_grid(clase_persona~depa_nombre)
 
 
@@ -140,8 +152,8 @@ radicacion <- ggplot(data=radicacion_df, aes(x=anio_radicacion, y= cant_nit))
 radicacion + geom_point(size=3) +
   geom_smooth() +
   xlab("Año") +
-  ylab("Evolutivo de cantidad de prestadores por año") +
-  ggtitle("Cantidad de vencimientos por año") +
+  ylab("Cantidad de radicaciones por año") +
+  ggtitle("Evolutivo de cantidad de prestadores por clase persona y naturaleza juridica") +
   facet_grid(clase_persona~naju_nombre)
 
 

@@ -69,7 +69,10 @@ municipios_df$Region = factor(municipios_df$Region)
 municipios_df$Dep = factor(municipios_df$Dep)
 municipios_df$Irural = factor(municipios_df$Irural)
 
+
+#--------------------------------
 # Caracteristicas del dataset 
+#--------------------------------
 nrow(municipios_df) # Cantidad de filas
 ncol(municipios_df) # Cantidad de columnas
 summary(municipios_df) # Resumen
@@ -115,7 +118,8 @@ departamentos_df <- limpiar_columna_Departamento(departamentos_df)
 
 ggplot(departamentos_df, aes(x=as.factor(Departamento), y=Superficie)) + 
   geom_boxplot(fill="Green", alpha=0.2) + 
-  xlab("Departamento") 
+  xlab("Departamento") +
+  ggtitle("Boxplot de superficie de municipios por departamento")  
 
 
 #----------------------------------------
@@ -131,7 +135,7 @@ cant_departamentos_df <- dbGetQuery(conn=con,
 # Graficar cantidad departamentos por región
 cant_departamentos <-ggplot(data=cant_departamentos_df, aes(x = reorder(Region, -cant_departamentos), y=cant_departamentos)) +
   geom_bar(stat="identity",fill="blue", alpha=0.5)+
-  theme_minimal() + 
+  theme_minimal(base_size = 12) + 
   xlab("Región") +
   ylab("Cantidad de departamentos") +
   ggtitle("Departamentos por región") +
